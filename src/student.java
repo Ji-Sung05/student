@@ -29,7 +29,7 @@ public class student {
     Connection conn;
 
     JFrame frame;
-    String frameTitle = "칵테일 데이터베이스 클라이언트";
+    String frameTitle = "학생  데이터베이스 클라이언트";
 
     //텍스트 필드
     JTextField id;
