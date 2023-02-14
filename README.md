@@ -16,4 +16,4 @@
 
 ** 실행 화면**
 
-<img src="https://user-images.githubusercontent.com/115493374/218750278-d87e8070-58c2-41fa-912c-740945c4d7c5.png"/>
+![학생정보_Javasql_연동](https://user-images.githubusercontent.com/115493374/218752660-242f0cb2-77ef-4191-a3e4-e64ea0aab9ba.png)
