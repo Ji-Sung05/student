@@ -31,22 +31,24 @@ public class student {
     JFrame frame;
     String frameTitle = "칵테일 데이터베이스 클라이언트";
 
+    //텍스트 필드
     JTextField id;
     JTextField name;
     JTextField major;
     JTextField gender;
     JTextField grade;
+    //(삭제, 수정, 추가, 저장)버튼
     JButton bDelete;
     JButton bUpdate;
-    JButton bInsert;
+    JButton bAdd;
     JButton bSave;
-
+    //이름 리스트
     JList names = new JList();
 
     public static void main(String[] args) {
         student client = new student();
-        client.setGUI();
-        client.dbConnectionInit();
+        client.setGUI();//데이터베이스 조작 GUI
+        client.dbConnectionInit();//데이터베이스 연동
     }
     private void setGUI() {
         frame = new JFrame(frameTitle);
@@ -88,13 +90,13 @@ public class student {
 
         bDelete = new JButton("삭제");
         bUpdate = new JButton("수정");
-        bInsert = new JButton("추가");
+        bAdd = new JButton("추가");
         bSave = new JButton("저장");
 
         JPanel bottomPanel = new JPanel();
         bottomPanel.add(bDelete);
         bottomPanel.add(bUpdate);
-        bottomPanel.add(bInsert);
+        bottomPanel.add(bAdd);
         bottomPanel.add(bSave);
 
         JPanel mainPanel = new JPanel(new BorderLayout());
@@ -104,16 +106,18 @@ public class student {
         names.addListSelectionListener(new NameListListener());
         bDelete.addActionListener(new ButtonListener());
         bUpdate.addActionListener(new ButtonListener());
-        bInsert.addActionListener(new NewButtonListener());
-        bSave.addActionListener(new SaveButtonListener());
+        bAdd.addActionListener(new ButtonListener());
+        bSave.addActionListener(new ButtonListener());
 
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.getContentPane().add(mainPanel);
         frame.setSize(700, 350);
         frame.setVisible(true);
     }
+    //데이터베이스 연동
     private void dbConnectionInit() {
         try {
+            //JDBC 드라이버 로드
             Class.forName("com.mysql.cj.jdbc.Driver");
             conn = DriverManager.getConnection("jdbc:mysql://localhost/student", "root", "mite");
             prepareList();
@@ -125,8 +129,9 @@ public class student {
     }
     public void prepareList() {
         try {
+            //Statement 객체를 만드는 메소드를 이용하여 테이블의 데이터를 읽어온다.
             Statement stmt = conn.createStatement();
-
+            //select문을 실행하여 rs라는 이름의 배열에 저장한다.
             ResultSet rs = stmt.executeQuery("SELECT 이름 FROM student");
             Vector<String> list = new Vector<String>();
             while(rs.next()) {
@@ -148,7 +153,8 @@ public class student {
             if(!lse.getValueIsAdjusting() && !names.isSelectionEmpty()) {
                 try {
                     Statement stmt = conn.createStatement();
-                    ResultSet rs = stmt.executeQuery("SELECT 학번, 이름, 학과명, 성별, 성적 FROM student WHERE 이름 = '" + (String)names.getSelectedValue() + "'");
+                    //선택된 이름에 해당하는 데이터들을 텍스트필드에 저장
+                    ResultSet rs = stmt.executeQuery("SELECT * FROM student WHERE 이름 = '" + (String)names.getSelectedValue() + "'");
                     rs.next();
                     id.setText(Double.toString(rs.getDouble("학번")));
                     name.setText(rs.getString("이름"));
@@ -172,7 +178,10 @@ public class student {
             if(e.getSource() == bDelete) {
                 try {
                     Statement stmt = conn.createStatement();
-                    stmt.executeUpdate("DELETE FROM student WHERE 이름 = '" + name.getText().trim() + "'");
+                    String sql = "delete from student where 이름=?";
+                    PreparedStatement ps = conn.prepareStatement(sql);
+                    ps.setString(1, name.getText().trim());
+                    ps.executeUpdate();
                     stmt.close();
                     prepareList();
                 }catch(SQLException sqlex) {
@@ -185,8 +194,12 @@ public class student {
             }else if(e.getSource() == bUpdate) {
                 try {
                     Statement stmt = conn.createStatement();
-                    stmt.executeUpdate("UPDATE drink_info SET 성적 = " + grade.getText() + " ,학과명 = " + major.getText() + ", 성별 = " + "'" + gender.getText() + "'" +
-                            " WHERE 이름 = '" + name.getText().trim() + "'");
+                    String sql = "UPDATE student SET 학과명=?, 성별 =?, 성적=? where 이름 = '" + name.getText().trim() + "'";
+                    PreparedStatement ps = conn.prepareStatement(sql);
+                    ps.setString(1, major.getText().trim());
+                    ps.setString(2, gender.getText().trim());
+                    ps.setString(3, grade.getText().trim());
+                    ps.executeUpdate();
                     stmt.close();
                     prepareList();
                 }catch(SQLException sqlex) {
@@ -196,41 +209,36 @@ public class student {
                     System.out.println("DB Handling 에러(DELETE 리스너) : " + ex.getMessage());
                     ex.printStackTrace();
                 }
-            }
-        }
-    }
-    public class SaveButtonListener implements ActionListener {
-        public void actionPerformed (ActionEvent e) {
-            try {
-                Statement stmt = conn.createStatement();
-                PreparedStatement ps = conn.prepareStatement("INSERT INTO student (학번, 이름, 학과명, 성별, 성적) VALUES (?, ?, ?, ?, ?)");
-                ps.setString(1, id.getText().trim());
-                ps.setString(2, name.getText().trim());
-                ps.setString(3, major.getText().trim());
-                ps.setString(4, gender.getText().trim());
-                ps.setString(5, grade.getText().trim());
+            }else if(e.getSource() == bSave) {
+                try {
+                    Statement stmt = conn.createStatement();
+                    String sql = "INSERT INTO student (학번, 이름, 학과명, 성별, 성적) VALUES (?, ?, ?, ?, ?)";
+                    PreparedStatement ps = conn.prepareStatement(sql);
+                    ps.setString(1, id.getText().trim());
+                    ps.setString(2, name.getText().trim());
+                    ps.setString(3, major.getText().trim());
+                    ps.setString(4, gender.getText().trim());
+                    ps.setString(5, grade.getText().trim());
 
-                ps.executeUpdate();
-                ps.close();
-                stmt.close();
-                prepareList();
-            } catch (SQLException sqlex) {
-                System.out.println("SQL 에러 : " + sqlex.getMessage());
-                sqlex.printStackTrace();
-            } catch (Exception ex) {
-                System.out.println("DB Handling 에러(SAVE 리스너) : " + ex.getMessage());
-                ex.printStackTrace();
+                    ps.executeUpdate();
+                    ps.close();
+                    stmt.close();
+                    prepareList();
+                } catch (SQLException sqlex) {
+                    System.out.println("SQL 에러 : " + sqlex.getMessage());
+                    sqlex.printStackTrace();
+                } catch (Exception ex) {
+                    System.out.println("DB Handling 에러(SAVE 리스너) : " + ex.getMessage());
+                    ex.printStackTrace();
+                }
+            }else if(e.getSource() == bAdd) {
+                id.setText("");
+                name.setText("");
+                major.setText("");
+                gender.setText("");
+                grade.setText("");
+                names.clearSelection();
             }
-        }
-    }
-    public class NewButtonListener implements ActionListener {
-        public void actionPerformed (ActionEvent e) {
-            id.setText("");
-            name.setText("");
-            major.setText("");
-            gender.setText("");
-            grade.setText("");
-            names.clearSelection();
         }
     }
 }
