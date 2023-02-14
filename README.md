@@ -12,7 +12,7 @@
 2.riverlayout.zip
 
 <img src="https://user-images.githubusercontent.com/115493374/218750278-d87e8070-58c2-41fa-912c-740945c4d7c5.png"/>
-* File 탭에서 Project Structure... 선택 후 첫번째 +를 눌러 커넥터 연결 후 두번째 +를 눌러 레이아웃을 연결한다.
+* File 탭에서 Project Structure... 선택 후 첫번째 +를 눌러 커넥터 연결 후 두번째 +를 눌러 레이아웃을 연결.
 
 ** 실행 화면**
 
